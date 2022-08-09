@@ -1,7 +1,6 @@
-export const parser = (input: string) => {
+export const parse = (input: string) => {
   const tokens = tokenize(input);
-  // TODO: parenthesize
-  return [];
+  return parenthesize(tokens);
 };
 
 export const tokenize = (input: string) => {
@@ -14,14 +13,38 @@ export const tokenize = (input: string) => {
     .filter((t) => t);
 };
 
-export const parenthesize = (input: string[], list = []) => {
+// @ts-ignore
+export const parenthesize = (input: string[], list: any[] = []) => {
   const token = input.shift(); // take first elem from the list
-  if (token) {
-    return list.pop()
+  if (!token) {
+    return list.pop();
   }
-  if (token === "(") {
 
+  if (token === "(") {
+    list.push(parenthesize(input, []));
+    return parenthesize(input, list);
   }
-}
+
+  if (token === ")") {
+    return list;
+  }
+
+  return parenthesize(input, list.concat(categorize(token)));
+};
+
+export const categorize = (input: string) => {
+  if (!isNaN(parseFloat(input))) {
+    // JS only has floats
+    return {
+      type: "atom",
+      val: parseFloat(input),
+    };
+  } else {
+    return {
+      type: "identifier",
+      val: input,
+    };
+  }
+};
 
 export const interpret = () => {};
